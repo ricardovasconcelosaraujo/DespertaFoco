@@ -26,10 +26,9 @@
       }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
+        <style>
       body { font-family: 'Inter', sans-serif; }
       .font-mono { font-family: 'JetBrains Mono', monospace; }
-      /* Custom scrollbar for webkit */
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -38,20 +37,21 @@
       ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.2.4",
+        "react/": "https://esm.sh/react@^19.2.4/",
+        "react-dom": "https://esm.sh/react-dom@^19.2.4",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+        "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+      }
+    }
+    </script>
+    <script type="module" src="/index.tsx"></script>
+  <link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 antialiased selection:bg-blue-500 selection:text-white transition-colors duration-300">
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>
