@@ -1,9 +1,5 @@
 
-/* Arquivo gerado para compatibilidade de build */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* Estilos globais básicos para o DespertaFoco */
 :root {
   color-scheme: light dark;
 }
@@ -12,4 +8,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Os estilos específicos de layout são tratados pelo Tailwind CDN no index.html */
