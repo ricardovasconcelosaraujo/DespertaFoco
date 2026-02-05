@@ -103,11 +103,12 @@ export const AlarmView: React.FC<AlarmViewProps> = ({
 
   return (
     <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500">
-      <header className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-colors">
+      <header className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-colors">
+        <div className="absolute top-0 right-0 p-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
             <h2 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Hora Atual</h2>
-            <div className="text-6xl md:text-7xl font-mono font-bold text-slate-900 dark:text-white tracking-tighter transition-colors">{formatCurrentTime(now)}</div>
+            <div className="text-6xl md:text-7xl font-mono font-bold text-slate-900 dark:text-white tracking-tighter drop-shadow-sm dark:drop-shadow-lg transition-colors">{formatCurrentTime(now)}</div>
             <p className="text-slate-400 dark:text-slate-500 text-sm mt-2 font-medium">{now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           </div>
           <div className="bg-slate-100 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 min-w-[240px] backdrop-blur-sm transition-colors">
@@ -137,98 +138,123 @@ export const AlarmView: React.FC<AlarmViewProps> = ({
         </div>
       </header>
 
-      <div className="grid gap-4">
-        {alarms.map((alarm) => {
-          const msUntil = getMsUntilAlarm(alarm.time);
-          const isExpanded = expandedId === alarm.id;
-          const [currentHour, currentMinute] = alarm.time.split(':');
-          const progressStyles = getProgressBarStyles(msUntil, alarm.activationTime);
+      {alarms.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800/30 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 transition-colors">
+           <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700/50 text-slate-400 dark:text-slate-500 rounded-full flex items-center justify-center mb-4 transition-colors">
+              <Bell size={32} />
+           </div>
+           <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2 transition-colors">Sua lista está vazia</h3>
+           <p className="text-slate-500 text-sm mb-8 transition-colors">Clique no botão abaixo para criar seu primeiro alarme</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {alarms.map((alarm) => {
+            const msUntil = getMsUntilAlarm(alarm.time);
+            const isExpanded = expandedId === alarm.id;
+            const [currentHour, currentMinute] = alarm.time.split(':');
+            const progressStyles = getProgressBarStyles(msUntil, alarm.activationTime);
 
-          return (
-            <div key={alarm.id} className={`bg-white dark:bg-slate-800 border rounded-2xl transition-all duration-300 overflow-hidden ${alarm.active ? 'border-blue-500/30 shadow-lg' : 'border-slate-200 dark:border-slate-700 opacity-90'}`}>
-              <div className="p-4 md:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="cursor-pointer flex-1" onClick={() => setExpandedId(isExpanded ? null : alarm.id)}>
-                    <div className="flex items-baseline gap-3">
-                      <span className={`text-4xl md:text-5xl font-bold tracking-tight transition-colors ${alarm.active ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>{alarm.time}</span>
-                      {alarm.label && <span className="text-xl text-slate-600 dark:text-slate-300 font-bold hidden md:inline-block transition-colors">{alarm.label}</span>}
+            return (
+              <div key={alarm.id} className={`bg-white dark:bg-slate-800 border rounded-2xl transition-all duration-300 overflow-hidden ${alarm.active ? 'border-blue-500/30 shadow-lg dark:shadow-blue-500/5' : 'border-slate-200 dark:border-slate-700 opacity-90'}`}>
+                <div className="p-4 md:p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="cursor-pointer flex-1" onClick={() => setExpandedId(isExpanded ? null : alarm.id)}>
+                      <div className="flex items-baseline gap-3">
+                        <span className={`text-4xl md:text-5xl font-bold tracking-tight transition-colors ${alarm.active ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>{alarm.time}</span>
+                        {alarm.label && <span className="text-xl text-slate-600 dark:text-slate-300 font-bold hidden md:inline-block transition-colors">{alarm.label}</span>}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mt-1 transition-colors">
+                        {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        <span className="text-[10px] uppercase tracking-widest font-bold">{isExpanded ? 'Ocultar ajustes' : 'Configurações'}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mt-1 transition-colors">
-                      {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                      <span className="text-[10px] uppercase tracking-widest font-bold">{isExpanded ? 'Ocultar ajustes' : 'Configurações'}</span>
-                    </div>
+                    <button onClick={() => handleToggleActive(alarm)} className={`relative w-14 h-8 rounded-full transition-all focus:outline-none ${alarm.active ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                      <span className={`absolute top-1 left-1 bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${alarm.active ? 'translate-x-6' : 'translate-x-0'}`}>
+                        {alarm.active ? <Check size={14} className="text-blue-600" /> : <X size={14} className="text-slate-400" />}
+                      </span>
+                    </button>
                   </div>
-                  <button onClick={() => handleToggleActive(alarm)} className={`relative w-14 h-8 rounded-full transition-all focus:outline-none ${alarm.active ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
-                    <span className={`absolute top-1 left-1 bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center ${alarm.active ? 'translate-x-6' : 'translate-x-0'}`}>
-                      {alarm.active ? <Check size={14} className="text-blue-600" /> : <X size={14} className="text-slate-400" />}
-                    </span>
-                  </button>
-                </div>
-                {alarm.active && !isExpanded && (
-                  <div className="mt-4 animate-in fade-in">
-                    <div className="flex justify-between text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1 transition-colors">
-                      <span>Tempo restante</span>
-                      <span className="text-slate-600 dark:text-slate-200 transition-colors">{formatTimeUntil(msUntil)}</span>
+                  {alarm.active && !isExpanded && (
+                    <div className="mt-4 animate-in fade-in">
+                      <div className="flex justify-between text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1 transition-colors">
+                        <span>Tempo restante</span>
+                        <span className="text-slate-600 dark:text-slate-200 transition-colors">{formatTimeUntil(msUntil)}</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden transition-colors">
+                        <div className={`h-full transition-all duration-1000 ease-linear ${progressStyles.colorClass}`} style={{ width: progressStyles.width }}></div>
+                      </div>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden transition-colors">
-                      <div className={`h-full transition-all duration-1000 ease-linear ${progressStyles.colorClass}`} style={{ width: progressStyles.width }}></div>
+                  )}
+                </div>
+
+                {isExpanded && (
+                  <div className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-6 border-t border-slate-200 dark:border-slate-700/50 animate-in slide-in-from-top-2 transition-colors">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs uppercase text-slate-500 font-bold mb-2">Horário</label>
+                          <div className="flex gap-2 items-center">
+                            <div className="relative flex-1">
+                              <select value={currentHour} onChange={(e) => handleTimeChange(alarm.id, alarm.time, 'hour', e.target.value)} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white text-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer transition-colors">
+                                {hours.map(h => <option key={h} value={h}>{h}</option>)}
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                            </div>
+                            <span className="text-slate-400 font-bold">:</span>
+                            <div className="relative flex-1">
+                              <select value={currentMinute} onChange={(e) => handleTimeChange(alarm.id, alarm.time, 'minute', e.target.value)} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white text-lg focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer transition-colors">
+                                {minutes.map(m => <option key={m} value={m}>{m}</option>)}
+                              </select>
+                              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs uppercase text-slate-500 font-bold mb-2">Nome do Alarme</label>
+                          <input type="text" value={alarm.label} onChange={(e) => updateAlarm(alarm.id, { label: e.target.value })} placeholder="Ex: Acordar, Remédio..." className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs uppercase text-slate-500 font-bold mb-2">Som do Alarme</label>
+                        <div className="relative">
+                          <select 
+                            value={alarm.sound} 
+                            onChange={(e) => {
+                              updateAlarm(alarm.id, { sound: e.target.value });
+                              previewSound(e.target.value);
+                            }}
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer transition-colors"
+                          >
+                            {Object.values(SOUNDS).map(s => (
+                              <option key={s.key} value={s.key}>{s.label}</option>
+                            ))}
+                          </select>
+                          <Volume2 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                        </div>
+                        <p className="mt-2 text-[10px] text-slate-500 italic font-medium">* Reproduzindo prévia de 3s ao selecionar</p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/50 transition-colors">
+                       <button onClick={() => deleteAlarm(alarm.id)} className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-500 px-4 py-2 rounded-lg transition-colors text-sm font-medium"><Trash2 size={16} /> Excluir</button>
+                       <button onClick={() => handleDone(alarm.id)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-emerald-600/20 font-bold active:scale-95"><Check size={18} /> Concluir</button>
                     </div>
                   </div>
                 )}
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {isExpanded && (
-                <div className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-6 border-t border-slate-200 dark:border-slate-700/50 animate-in slide-in-from-top-2 transition-colors">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs uppercase text-slate-500 font-bold mb-2">Horário</label>
-                        <div className="flex gap-2 items-center">
-                          <select value={currentHour} onChange={(e) => handleTimeChange(alarm.id, alarm.time, 'hour', e.target.value)} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white text-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            {hours.map(h => <option key={h} value={h}>{h}</option>)}
-                          </select>
-                          <span className="text-slate-400 font-bold">:</span>
-                          <select value={currentMinute} onChange={(e) => handleTimeChange(alarm.id, alarm.time, 'minute', e.target.value)} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white text-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            {minutes.map(m => <option key={m} value={m}>{m}</option>)}
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs uppercase text-slate-500 font-bold mb-2">Nome do Alarme</label>
-                        <input type="text" value={alarm.label} onChange={(e) => updateAlarm(alarm.id, { label: e.target.value })} placeholder="Ex: Acordar..." className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs uppercase text-slate-500 font-bold mb-2">Som do Alarme</label>
-                      <select 
-                        value={alarm.sound} 
-                        onChange={(e) => {
-                          updateAlarm(alarm.id, { sound: e.target.value });
-                          previewSound(e.target.value);
-                        }}
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                      >
-                        {Object.values(SOUNDS).map(s => (
-                          <option key={s.key} value={s.key}>{s.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/50">
-                     <button onClick={() => deleteAlarm(alarm.id)} className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-500 font-medium"><Trash2 size={16} /> Excluir</button>
-                     <button onClick={() => handleDone(alarm.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl transition-all shadow-lg font-bold">Concluir</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <button onClick={addAlarm} className="fixed bottom-24 right-6 md:bottom-12 md:right-12 h-16 w-16 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 z-30">
+      <button 
+        onClick={addAlarm} 
+        className={`fixed bottom-24 right-6 md:bottom-12 md:right-12 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-xl dark:shadow-2xl dark:shadow-blue-600/40 flex items-center justify-center transition-all hover:scale-105 active:scale-95 z-30 ${alarms.length === 0 ? 'px-8 w-auto' : 'w-16'}`}
+        title="Criar novo alarme"
+      >
         <Plus size={32} />
+        {alarms.length === 0 && <span className="ml-3 font-bold text-lg whitespace-nowrap">Cadastrar Alarme</span>}
       </button>
     </div>
   );

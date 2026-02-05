@@ -4,7 +4,7 @@ import { Play, Pause, RefreshCw, Flag } from 'lucide-react';
 
 export const StopwatchView: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [time, setTime] = useState(0); 
+  const [time, setTime] = useState(0); // milliseconds
   const [laps, setLaps] = useState<number[]>([]);
   const requestRef = useRef<number>();
   const startTimeRef = useRef<number>(0);
@@ -26,6 +26,14 @@ export const StopwatchView: React.FC = () => {
     requestRef.current = requestAnimationFrame(animate);
   };
 
+  // Atualiza o título da aba com o tempo do cronômetro
+  useEffect(() => {
+    if (isRunning) {
+      const f = formatTime(time);
+      document.title = `⏱️ ${f.text}.${f.sub} | Cronômetro`;
+    }
+  }, [time, isRunning]);
+
   useEffect(() => {
     if (isRunning) {
       startTimeRef.current = performance.now() - time;
@@ -33,7 +41,9 @@ export const StopwatchView: React.FC = () => {
     } else {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     }
-    return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
   }, [isRunning]);
 
   const handleLap = () => {
@@ -44,16 +54,17 @@ export const StopwatchView: React.FC = () => {
     setIsRunning(false);
     setTime(0);
     setLaps([]);
+    document.title = 'Cronômetro Online de Precisão | DespertaFoco';
   };
 
   const formatted = formatTime(time);
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+    <div className="flex flex-col items-center justify-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center mt-10">
         <div className="text-8xl md:text-9xl font-mono font-bold tracking-tighter tabular-nums text-slate-900 dark:text-white transition-colors">
           {formatted.text}
-          <span className="text-4xl md:text-5xl text-slate-400 ml-2">.{formatted.sub}</span>
+          <span className="text-4xl md:text-5xl text-slate-400 dark:text-slate-500 ml-2">.{formatted.sub}</span>
         </div>
       </div>
 
@@ -61,15 +72,26 @@ export const StopwatchView: React.FC = () => {
         <button
           onClick={() => setIsRunning(!isRunning)}
           className={`h-16 w-16 rounded-full flex items-center justify-center transition-all ${
-            isRunning ? 'bg-red-500/10 text-red-600' : 'bg-green-500/10 text-green-600'
+            isRunning 
+              ? 'bg-red-500/10 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/30' 
+              : 'bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/20 dark:hover:bg-green-500/30'
           }`}
         >
           {isRunning ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
         </button>
-        <button onClick={handleLap} disabled={!isRunning} className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 text-slate-600 flex items-center justify-center disabled:opacity-50 border border-slate-200 dark:border-slate-700">
+        
+        <button
+          onClick={handleLap}
+          disabled={!isRunning}
+          className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
+        >
           <Flag size={24} />
         </button>
-        <button onClick={handleReset} className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 text-slate-600 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+
+        <button
+          onClick={handleReset}
+          className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
+        >
           <RefreshCw size={24} />
         </button>
       </div>
@@ -89,7 +111,9 @@ export const StopwatchView: React.FC = () => {
                  return (
                   <tr key={index} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                     <td className="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">#{laps.length - index}</td>
-                    <td className="py-3 px-4 text-right font-mono text-slate-900 dark:text-slate-200">{f.text}.{f.sub}</td>
+                    <td className="py-3 px-4 text-right font-mono text-slate-900 dark:text-slate-200">
+                      {f.text}.{f.sub}
+                    </td>
                   </tr>
                 );
               })}
