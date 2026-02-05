@@ -1,39 +1,102 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RefreshCw } from 'lucide-react';
+import { Play, Pause, RefreshCw, Flag } from 'lucide-react';
 
 export const StopwatchView: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(0); 
+  const [laps, setLaps] = useState<number[]>([]);
   const requestRef = useRef<number>();
+  const startTimeRef = useRef<number>(0);
+
+  const formatTime = (ms: number) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    const centiseconds = Math.floor((ms % 1000) / 10);
+    return {
+      text: `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+      sub: String(centiseconds).padStart(2, '0')
+    };
+  };
 
   const animate = (timestamp: number) => {
-    setTime(prev => prev + 10);
+    if (!startTimeRef.current) startTimeRef.current = timestamp - time;
+    const newTime = timestamp - startTimeRef.current;
+    setTime(newTime);
     requestRef.current = requestAnimationFrame(animate);
   };
 
   useEffect(() => {
-    if (isRunning) requestRef.current = requestAnimationFrame(animate);
-    else if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    if (isRunning) {
+      startTimeRef.current = performance.now() - time;
+      requestRef.current = requestAnimationFrame(animate);
+    } else {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    }
     return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
   }, [isRunning]);
 
-  const format = (ms: number) => {
-    const mins = Math.floor(ms / 60000);
-    const secs = Math.floor((ms % 60000) / 1000);
-    const cents = Math.floor((ms % 1000) / 10);
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(cents).padStart(2, '0')}`;
+  const handleLap = () => {
+    setLaps(prev => [time, ...prev]);
   };
 
+  const handleReset = () => {
+    setIsRunning(false);
+    setTime(0);
+    setLaps([]);
+  };
+
+  const formatted = formatTime(time);
+
   return (
-    <div className="flex flex-col items-center justify-center py-12 space-y-8">
-      <div className="text-8xl md:text-9xl font-mono font-bold text-slate-900 dark:text-white">{format(time)}</div>
-      <div className="flex gap-4">
-        <button onClick={() => setIsRunning(!isRunning)} className={`w-16 h-16 rounded-full flex items-center justify-center ${isRunning ? 'bg-red-500' : 'bg-green-500'} text-white`}>
-          {isRunning ? <Pause/> : <Play fill="white"/>}
-        </button>
-        <button onClick={() => { setIsRunning(false); setTime(0); }} className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><RefreshCw/></button>
+    <div className="flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+      <div className="text-center mt-10">
+        <div className="text-8xl md:text-9xl font-mono font-bold tracking-tighter tabular-nums text-slate-900 dark:text-white transition-colors">
+          {formatted.text}
+          <span className="text-4xl md:text-5xl text-slate-400 ml-2">.{formatted.sub}</span>
+        </div>
       </div>
+
+      <div className="flex gap-4">
+        <button
+          onClick={() => setIsRunning(!isRunning)}
+          className={`h-16 w-16 rounded-full flex items-center justify-center transition-all ${
+            isRunning ? 'bg-red-500/10 text-red-600' : 'bg-green-500/10 text-green-600'
+          }`}
+        >
+          {isRunning ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
+        </button>
+        <button onClick={handleLap} disabled={!isRunning} className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 text-slate-600 flex items-center justify-center disabled:opacity-50 border border-slate-200 dark:border-slate-700">
+          <Flag size={24} />
+        </button>
+        <button onClick={handleReset} className="h-16 w-16 rounded-full bg-white dark:bg-slate-800 text-slate-600 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+          <RefreshCw size={24} />
+        </button>
+      </div>
+
+      {laps.length > 0 && (
+        <div className="w-full max-w-md mt-8 bg-white dark:bg-slate-800/50 rounded-2xl p-4 max-h-60 overflow-y-auto border border-slate-200 dark:border-slate-700 shadow-xl transition-colors">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-700 transition-colors">
+                <th className="text-left py-2 px-4 font-bold uppercase tracking-wider text-[10px]">Volta</th>
+                <th className="text-right py-2 px-4 font-bold uppercase tracking-wider text-[10px]">Tempo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {laps.map((lap, index) => {
+                 const f = formatTime(lap);
+                 return (
+                  <tr key={index} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-400 font-medium">#{laps.length - index}</td>
+                    <td className="py-3 px-4 text-right font-mono text-slate-900 dark:text-slate-200">{f.text}.{f.sub}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

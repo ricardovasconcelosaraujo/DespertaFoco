@@ -154,7 +154,7 @@ export default function App() {
         </button>
       </nav>
 
-      <main className="flex-1 p-4 md:p-12 pb-24 md:pb-12 max-w-6xl mx-auto w-full">
+      <main className="flex-1 p-4 md:p-12 pb-24 md:pb-12 max-w-6xl mx-auto w-full overflow-y-auto">
         {currentView === 'dashboard' && <DashboardView onNavigate={setCurrentView} />}
         {currentView === 'alarms' && <AlarmView alarms={alarms} addAlarm={addAlarm} updateAlarm={updateAlarm} deleteAlarm={deleteAlarm} previewSound={previewSound} />}
         {currentView === 'stopwatch' && <StopwatchView />}
