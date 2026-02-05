@@ -21,18 +21,9 @@ export const StopwatchView: React.FC = () => {
 
   const animate = (timestamp: number) => {
     if (!startTimeRef.current) startTimeRef.current = timestamp - time;
-    const newTime = timestamp - startTimeRef.current;
-    setTime(newTime);
+    setTime(timestamp - startTimeRef.current);
     requestRef.current = requestAnimationFrame(animate);
   };
-
-  // Atualiza o título da aba com o tempo do cronômetro
-  useEffect(() => {
-    if (isRunning) {
-      const f = formatTime(time);
-      document.title = `⏱️ ${f.text}.${f.sub} | Cronômetro`;
-    }
-  }, [time, isRunning]);
 
   useEffect(() => {
     if (isRunning) {
@@ -54,7 +45,6 @@ export const StopwatchView: React.FC = () => {
     setIsRunning(false);
     setTime(0);
     setLaps([]);
-    document.title = 'Cronômetro Online de Precisão | DespertaFoco';
   };
 
   const formatted = formatTime(time);
@@ -77,7 +67,7 @@ export const StopwatchView: React.FC = () => {
               : 'bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/20 dark:hover:bg-green-500/30'
           }`}
         >
-          {isRunning ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
+          {isRunning ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}
         </button>
         
         <button

@@ -25,45 +25,39 @@ export default function App() {
   const previewTimeoutRef = useRef<number | null>(null);
   const autoStopTimeoutRef = useRef<number | null>(null);
 
-  // Lógica de SEO e Títulos Dinâmicos com a nova marca DespertaFoco
   useEffect(() => {
     const metaDescription = document.querySelector('meta[name="description"]');
-    let viewTitle = '';
-
+    
     switch (currentView) {
       case 'dashboard':
-        viewTitle = 'DespertaFoco | Alarme Online, Despertador e Pomodoro';
+        document.title = 'DespertaFoco | Alarme Online, Despertador e Pomodoro';
         metaDescription?.setAttribute('content', 'DespertaFoco: Sua ferramenta definitiva de gestão de tempo. Alarme online, despertador personalizado e Pomodoro para foco total.');
         break;
       case 'alarms':
-        viewTitle = 'Alarme Online / Despertador Online | DespertaFoco';
+        document.title = 'Alarme Online / Despertador Online | DespertaFoco';
         metaDescription?.setAttribute('content', 'Configure seu alarme online ou despertador personalizado com diversos sons e função soneca no DespertaFoco.');
         break;
       case 'pomodoro':
-        viewTitle = 'Pomodoro / Despertador para Estudar | DespertaFoco';
+        document.title = 'Pomodoro / Despertador para Estudar | DespertaFoco';
         metaDescription?.setAttribute('content', 'Aumente sua produtividade com o cronômetro pomodoro ideal para estudar e trabalhar com foco no DespertaFoco.');
         break;
       case 'temporizador':
-        viewTitle = 'Temporizador Online / Timer Regressivo | DespertaFoco';
+        document.title = 'Temporizador Online / Timer Regressivo | DespertaFoco';
         metaDescription?.setAttribute('content', 'Contagem regressiva online simples e eficaz para suas atividades diárias no DespertaFoco.');
         break;
       case 'stopwatch':
-        viewTitle = 'Cronômetro Online de Precisão | DespertaFoco';
+        document.title = 'Cronômetro Online de Precisão | DespertaFoco';
         metaDescription?.setAttribute('content', 'Cronômetro online gratuito com marcação de voltas e alta precisão no DespertaFoco.');
         break;
     }
 
-    // Coleta todos os horários de alarmes ativos para mostrar na aba (Ex: 07:00 ~ 08:00)
     const activeAlarmsTimes = alarms
       .filter(a => a.active)
       .sort((a, b) => a.time.localeCompare(b.time))
       .map(a => a.time);
     
     if (activeAlarmsTimes.length > 0) {
-      const alarmsString = activeAlarmsTimes.join(' ~ ');
-      document.title = `(${alarmsString}) ${viewTitle}`;
-    } else {
-      document.title = viewTitle;
+      document.title = `(${activeAlarmsTimes[0]}) ${document.title}`;
     }
   }, [currentView, alarms]);
 
@@ -206,10 +200,11 @@ export default function App() {
       case 'pomodoro':
         return <PomodoroView 
           onFinished={(sound) => {
-            playAudio(sound, false);
+            // Agora ativamos o LOOP (true) para o som repetir nos 7 segundos
+            playAudio(sound, true);
             autoStopTimeoutRef.current = window.setTimeout(() => {
               stopAudio();
-            }, 3000);
+            }, 7000);
           }} 
           stopAudio={stopAudio}
           previewSound={previewSound} 
@@ -231,7 +226,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col md:flex-row transition-colors duration-300">
-      {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-blue-600 rounded-lg text-white">
@@ -242,7 +236,6 @@ export default function App() {
         <ThemeToggle />
       </div>
 
-      {/* Navigation Sidebar */}
       <nav className="fixed bottom-0 w-full md:w-24 md:static md:h-screen bg-white dark:bg-slate-800/80 backdrop-blur-md border-t md:border-t-0 md:border-r border-slate-200 dark:border-slate-700 z-40 flex md:flex-col items-center justify-around md:justify-start md:pt-8 md:gap-8">
         {[
           { id: 'dashboard', icon: LayoutDashboard, label: 'Início' },
